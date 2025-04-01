@@ -54,7 +54,7 @@ Planet* next(Planet* planets) {
          double dx = planets[j].x - planets[i].x;
          double dy = planets[j].y - planets[i].y;
          double distSqr = dx*dx + dy*dy + 0.0001;
-         double invDist = 1.0 / sqrt(distSqr);
+         double invDist = planets[i].mass * planets[j].mass / sqrt(distSqr);
          double invDist3 = invDist * invDist * invDist;
          nextplanets[i].x += dx * invDist3;
          nextplanets[i].y += dy * invDist3;
@@ -78,7 +78,7 @@ int main(int argc, const char** argv){
 
    Planet* planets = (Planet*)malloc(sizeof(Planet) * nplanets);
    for (int i=0; i<nplanets; i++) {
-      planets[i].mass = randomDouble() * 50 + 1;
+      planets[i].mass = randomDouble() + 0.1;
       planets[i].x = randomDouble() * 100 - 50;
       planets[i].y = randomDouble() * 100 - 50;
       planets[i].vx = randomDouble() * 5 - 2.5;
