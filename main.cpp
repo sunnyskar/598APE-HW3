@@ -56,8 +56,8 @@ Planet* next(Planet* planets) {
          double distSqr = dx*dx + dy*dy + 0.0001;
          double invDist = planets[i].mass * planets[j].mass / sqrt(distSqr);
          double invDist3 = invDist * invDist * invDist;
-         nextplanets[i].x += dx * invDist3;
-         nextplanets[i].y += dy * invDist3;
+         nextplanets[i].vx += dt * dx * invDist3;
+         nextplanets[i].vy += dt * dy * invDist3;
       }
       nextplanets[i].x += dt * nextplanets[i].vx;
       nextplanets[i].y += dt * nextplanets[i].vy;
@@ -73,14 +73,14 @@ int main(int argc, const char** argv){
    }
    nplanets = atoi(argv[1]);
    timesteps = atoi(argv[2]);
-   dt = 0.1;
+   dt = 0.001;
    G = 6.6743;
 
    Planet* planets = (Planet*)malloc(sizeof(Planet) * nplanets);
    for (int i=0; i<nplanets; i++) {
-      planets[i].mass = randomDouble() + 0.1;
-      planets[i].x = randomDouble() * 100 - 50;
-      planets[i].y = randomDouble() * 100 - 50;
+      planets[i].mass = randomDouble() * 10 + 0.2;
+      planets[i].x = ( randomDouble() - 0.5 ) * 100 * pow(1 + nplanets, 0.4);
+      planets[i].y = ( randomDouble() - 0.5 ) * 100 * pow(1 + nplanets, 0.4);
       planets[i].vx = randomDouble() * 5 - 2.5;
       planets[i].vy = randomDouble() * 5 - 2.5;
    }
@@ -89,7 +89,7 @@ int main(int argc, const char** argv){
    gettimeofday(&start, NULL);
    for (int i=0; i<timesteps; i++) {
       planets = next(planets);
-      //printf("x=%f y=%f\n", planets[nplanets-1].x, planets[nplanets-1].y);
+      // printf("x=%f y=%f vx=%f vy=%f\n", planets[nplanets-1].x, planets[nplanets-1].y, planets[nplanets-1].vx, planets[nplanets-1].vy);
    }
    gettimeofday(&end, NULL);
    printf("Total time to run simulation %0.6f seconds, final location %f %f\n", tdiff(&start, &end), planets[nplanets-1].x, planets[nplanets-1].y);
