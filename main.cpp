@@ -39,6 +39,56 @@ int timesteps;
 double dt;
 double G;
 
+Planet* next_parallel(Planet* planets) {
+   Planet* nextplanets = (Planet*)malloc(sizeof(Planet) * nplanets);
+   for (int i=0; i<nplanets; i++) {
+      nextplanets[i].vx = planets[i].vx;
+      nextplanets[i].vy = planets[i].vy;
+      nextplanets[i].mass = planets[i].mass;
+      nextplanets[i].x = planets[i].x;
+      nextplanets[i].y = planets[i].y;
+   }
+
+   // Optimization 2: Calculate forces using parallelization
+   #pragma omp parallel
+   {
+      // Create thread-local arrays
+      double* local_vx = (double*)calloc(nplanets, sizeof(double));
+      double* local_vy = (double*)calloc(nplanets, sizeof(double));
+      
+      #pragma omp for schedule(dynamic)
+      for (int i=0; i<nplanets; i++) {
+         for (int j=i+1; j<nplanets; j++) {
+            double dx = planets[j].x - planets[i].x;
+            double dy = planets[j].y - planets[i].y;
+            double distSqr = dx*dx + dy*dy + 0.0001;
+            double invDist = planets[i].mass * planets[j].mass / sqrt(distSqr);
+            double invDist3 = invDist * invDist * invDist;
+         
+            // Calculate forces as before but update local arrays
+            local_vx[i] += dt * dx * invDist3;
+            local_vy[i] += dt * dy * invDist3;
+            local_vx[j] -= dt * dx * invDist3;
+            local_vy[j] -= dt * dy * invDist3;
+         }
+      }
+      
+      // Combine results with a critical section
+      #pragma omp critical
+      {
+         for (int i=0; i<nplanets; i++) {
+               nextplanets[i].vx += local_vx[i];
+               nextplanets[i].vy += local_vy[i];
+         }
+      }
+      
+      free(local_vx);
+      free(local_vy);
+   }
+   free(planets);
+   return nextplanets;
+}
+
 Planet* next(Planet* planets) {
    Planet* nextplanets = (Planet*)malloc(sizeof(Planet) * nplanets);
    for (int i=0; i<nplanets; i++) {
@@ -99,7 +149,11 @@ int main(int argc, const char** argv){
    struct timeval start, end;
    gettimeofday(&start, NULL);
    for (int i=0; i<timesteps; i++) {
-      planets = next(planets);
+      if (nplanets > 1000) {
+         planets = next_parallel(planets);
+      } else {
+         planets = next(planets);
+      }
       // printf("x=%f y=%f vx=%f vy=%f\n", planets[nplanets-1].x, planets[nplanets-1].y, planets[nplanets-1].vx, planets[nplanets-1].vy);
    }
    gettimeofday(&end, NULL);
