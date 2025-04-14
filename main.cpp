@@ -49,16 +49,27 @@ Planet* next(Planet* planets) {
       nextplanets[i].y = planets[i].y;
    }
 
+   // Optimization 1: Calculate forces using symmetry
    for (int i=0; i<nplanets; i++) {
-      for (int j=0; j<nplanets; j++) {
+      for (int j=i+1; j<nplanets; j++) { 
          double dx = planets[j].x - planets[i].x;
          double dy = planets[j].y - planets[i].y;
          double distSqr = dx*dx + dy*dy + 0.0001;
          double invDist = planets[i].mass * planets[j].mass / sqrt(distSqr);
          double invDist3 = invDist * invDist * invDist;
+         
+         // Apply force to planet i
          nextplanets[i].vx += dt * dx * invDist3;
          nextplanets[i].vy += dt * dy * invDist3;
+         
+         // Apply opposite force to planet j
+         nextplanets[j].vx -= dt * dx * invDist3;
+         nextplanets[j].vy -= dt * dy * invDist3;
       }
+   }
+   
+   // Update positions
+   for (int i=0; i<nplanets; i++) {
       nextplanets[i].x += dt * nextplanets[i].vx;
       nextplanets[i].y += dt * nextplanets[i].vy;
    }
