@@ -149,7 +149,7 @@ int main(int argc, const char** argv){
    struct timeval start, end;
    gettimeofday(&start, NULL);
    for (int i=0; i<timesteps; i++) {
-      if (nplanets > 1000) {
+      if (nplanets > 500) {
          planets = next_parallel(planets);
       } else {
          planets = next(planets);
