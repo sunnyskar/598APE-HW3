@@ -35,3 +35,23 @@ In particular, consider speeding up simple run like the following (which runs ~6
 ```
 
 Exact bitwise reproducibility is not required, but approximate correctness (within a reasonable region of the final location).
+
+
+For running specific optimizations check out the following branches:
+
+Original:
+```bash
+git checkout original
+```
+
+Symmetric Force Optimization:
+```bash
+git checkout opt1
+```
+
+Parallelization:
+```bash
+git checkout main
+```
+
+Then run the code as above. If you have time you can just run ./benchmark.sh and it will run (Takes about 3-4 hrs).
